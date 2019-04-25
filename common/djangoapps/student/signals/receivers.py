@@ -50,20 +50,3 @@ def on_user_updated(sender, instance, **kwargs):  # pylint: disable=unused-argum
                 EMAIL_EXISTS_MSG_FMT.format(username=instance.email),
                 field="email"
             )
-
-
-def add_history_order_line_id(sender, **kwargs):  # pylint: disable=unused-argument
-    """
-    Signal handler for django-simple-history tables that inherit from OrderLineHistoricalModel.
-
-    This will get called to capture any order history associated with the parent model change. See the docstring of
-    OrderLineHistoricalModel and implementation in CourseEnrollment for more information. The signal itself is
-    documented at: https://django-simple-history.readthedocs.io/en/2.7.0/signals.html
-
-    Args:
-        sender: The object that fired the signal
-        **kwargs: Keyword arguments from the `pre_create_historical_record` signal
-    """
-    instance = kwargs['instance']
-    history_instance = kwargs['history_instance']
-    history_instance.order_line_id = instance._order_line_id  # pylint: disable=protected-access

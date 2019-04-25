@@ -7,8 +7,6 @@ from django.apps import AppConfig
 from django.contrib.auth.signals import user_logged_in
 from django.db.models.signals import pre_save
 
-from simple_history.signals import pre_create_historical_record
-
 
 class StudentConfig(AppConfig):
     """
@@ -25,11 +23,3 @@ class StudentConfig(AppConfig):
         from django.contrib.auth.models import User
         from .signals.receivers import on_user_updated
         pre_save.connect(on_user_updated, sender=User)
-
-        from student.models import HistoricalCourseEnrollment
-        from .signals.receivers import add_history_order_line_id
-
-        pre_create_historical_record.connect(
-            add_history_order_line_id,
-            sender=HistoricalCourseEnrollment
-        )

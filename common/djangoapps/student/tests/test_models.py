@@ -405,32 +405,3 @@ class TestAccountRecovery(TestCase):
 
         # Assert that there is no longer an AccountRecovery record for this user
         assert len(AccountRecovery.objects.filter(user_id=user.id)) == 0
-
-
-class TestCourseEnrollmentHistory(SharedModuleStoreTestCase):
-    """
-    Tests for our custom django-simple-history related code on CourseEnrollments
-    """
-    @classmethod
-    def setUp(cls):
-        cls.course = CourseFactory()
-        cls.user = UserFactory()
-
-    def test_add_order_id(self):
-        """
-        Assert that when an order_line_id is passed in, it shows up in history, and that a lack of
-        order_line_id causes no errors.
-        """
-        enrollment = CourseEnrollment.enroll(self.user, self.course.id, mode=CourseMode.AUDIT)
-        enrollment.update_enrollment(mode=CourseMode.VERIFIED, order_line_id=50010)
-
-        # There should be 3 history rows, the "create" which has no order_line_id,
-        # the change from inactive to active, which has no order_line_id and the mode update
-        # which does have an order_line_id.
-
-        self.assertEqual(enrollment.history.all().count(), 3)
-
-        first, second, third = enrollment.history.all().order_by('id')
-        self.assertIsNone(first.order_line_id)
-        self.assertIsNone(second.order_line_id)
-        self.assertEqual(third.order_line_id, 50010)
