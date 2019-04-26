@@ -7,6 +7,7 @@ import factory
 from django.contrib.auth.models import AnonymousUser, Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from factory.django import DjangoModelFactory
+from mock import MagicMock
 from opaque_keys.edx.keys import CourseKey
 from pytz import UTC
 
@@ -132,6 +133,9 @@ class CourseEnrollmentFactory(DjangoModelFactory):
     def _create(cls, model_class, *args, **kwargs):
         manager = cls._get_manager(model_class)
         course_kwargs = {}
+
+        cls.history = MagicMock()
+
         for key in kwargs.keys():
             if key.startswith('course__'):
                 course_kwargs[key.split('__')[1]] = kwargs.pop(key)
