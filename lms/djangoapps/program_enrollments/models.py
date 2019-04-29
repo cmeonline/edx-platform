@@ -43,7 +43,7 @@ class ProgramEnrollment(TimeStampedModel):  # pylint: disable=model-missing-unic
     program_uuid = models.UUIDField(db_index=True, null=False)
     curriculum_uuid = models.UUIDField(db_index=True, null=False)
     status = models.CharField(max_length=9, choices=STATUSES)
-    historical_records = HistoricalRecords()
+    historical_records = HistoricalRecords(app="program_enrollments")
 
     @classmethod
     def retire_user(cls, user_id):
