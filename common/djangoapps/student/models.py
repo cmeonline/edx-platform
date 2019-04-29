@@ -1436,8 +1436,26 @@ class CourseEnrollment(models.Model):
                 raise AlreadyEnrolledError
 
         # User is allowed to enroll if they've reached this point.
-        enrollment = cls.get_or_create_enrollment(user, course_key)
-        enrollment.update_enrollment(is_active=True, mode=mode)
+        # enrollment = cls.get_or_create_enrollment(user, course_key)
+        # enrollment.update_enrollment(is_active=True, mode=mode)
+        if user.id is None:
+            user.save()
+
+        enrollment = cls.objects.create(
+            user=user,
+            course_id=course_key,
+            mode=mode,
+            is_active=True
+        )
+        enrollment.save()
+
+        # If there was an unlinked CEA, it becomes linked now
+        CourseEnrollmentAllowed.objects.filter(
+            email=user.email,
+            course_id=course_key,
+            user__isnull=True
+        ).update(user=user)
+
         enrollment.send_signal(EnrollStatusChange.enroll)
 
         return enrollment
