@@ -1441,13 +1441,19 @@ class CourseEnrollment(models.Model):
         if user.id is None:
             user.save()
 
-        enrollment = cls.objects.create(
+        enrollment, created = cls.objects.get_or_create(
             user=user,
             course_id=course_key,
-            mode=mode,
-            is_active=True
+            defaults={
+                'mode': mode,
+                'is_active': True
+            }
         )
-        enrollment.save()
+
+        if enrollment.mode != mode or not enrollment.is_active:
+            enrollment.mode = mode
+            enrollment.is_active = True
+            enrollment.save()
 
         # If there was an unlinked CEA, it becomes linked now
         CourseEnrollmentAllowed.objects.filter(
