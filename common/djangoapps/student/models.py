@@ -1462,6 +1462,14 @@ class CourseEnrollment(models.Model):
             user__isnull=True
         ).update(user=user)
 
+        enrollment.emit_event(EVENT_NAME_ENROLLMENT_ACTIVATED)
+        enrollment.emit_event(EVENT_NAME_ENROLLMENT_MODE_CHANGED)
+        ENROLLMENT_TRACK_UPDATED.send(
+            sender=None,
+            user=user,
+            course_key=course_key,
+            countdown=SCORE_RECALCULATION_DELAY_ON_ENROLLMENT_UPDATE
+        )
         enrollment.send_signal(EnrollStatusChange.enroll)
 
         return enrollment

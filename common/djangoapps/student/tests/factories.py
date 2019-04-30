@@ -130,11 +130,9 @@ class CourseEnrollmentFactory(DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
 
     @classmethod
-    def _create(cls, model_class, *args, **kwargs):
+    def _create(cls, model_class, mock_events=True, mock_signals=True, mock_history=True, *args, **kwargs):
         manager = cls._get_manager(model_class)
         course_kwargs = {}
-
-        cls.history = MagicMock()
 
         for key in kwargs.keys():
             if key.startswith('course__'):
@@ -157,7 +155,15 @@ class CourseEnrollmentFactory(DjangoModelFactory):
                 course_overview = CourseOverviewFactory(**course_kwargs)
             kwargs['course'] = course_overview
 
-        return manager.create(*args, **kwargs)
+        klass = manager.create(*args, **kwargs)
+
+        if mock_events:
+            klass.emit_event = MagicMock()
+        if mock_signals:
+            klass.send_event = MagicMock()
+        if mock_history:
+            klass.history = MagicMock()
+        return klass
 
 
 class CourseAccessRoleFactory(DjangoModelFactory):
