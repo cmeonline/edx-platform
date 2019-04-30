@@ -30,6 +30,12 @@ class ProgramEnrollment(TimeStampedModel):  # pylint: disable=model-missing-unic
     class Meta(object):
         app_label = "program_enrollments"
 
+        # A student enrolled in a given (program, curriculum) should always
+        # have a non-null ``user`` or ``external_user_key`` field (or both).
+        unique_together = (
+            ('user', 'external_user_key', 'program_uuid', 'curriculum_uuid'),
+        )
+
     user = models.ForeignKey(
         User,
         null=True,
@@ -71,6 +77,9 @@ class ProgramEnrollment(TimeStampedModel):  # pylint: disable=model-missing-unic
             return None
         return program_course_enrollment
 
+    def __str__(self):
+        return '[ProgramEnrollment id={}]'.format(self.id)
+
 
 class ProgramCourseEnrollment(TimeStampedModel):  # pylint: disable=model-missing-unicode
     """
@@ -100,3 +109,6 @@ class ProgramCourseEnrollment(TimeStampedModel):  # pylint: disable=model-missin
     course_key = CourseKeyField(max_length=255)
     status = models.CharField(max_length=9, choices=STATUSES)
     historical_records = HistoricalRecords()
+
+    def __str__(self):
+        return '[ProgramCourseEnrollment id={}]'.format(self.id)
