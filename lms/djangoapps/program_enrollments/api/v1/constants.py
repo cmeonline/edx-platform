@@ -3,7 +3,7 @@
 """
 
 # Captures strings composed of alphanumeric characters, dashes, and underscores.
-PROGRAM_KEY_PATTERN = r'(?P<program_key>[A-Za-z0-9-_]+)'
+PROGRAM_UUID_PATTERN = r'(?P<program_uuid>[A-Za-z0-9-]+)'
 
 class CourseEnrollmentResponseStatuses:
     ACTIVE = "active"
