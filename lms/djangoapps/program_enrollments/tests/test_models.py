@@ -41,7 +41,7 @@ class ProgramEnrollmentModelTests(TestCase):
             # This will give us 4 program enrollments for self.program_uuid
             # and 1 enrollment for self.other_program_uuid
             user_curriculum = curriculum_b if i % 2 else curriculum_a
-            user_status =  'pending' if i % 2 else 'enrolled'
+            user_status = 'pending' if i % 2 else 'enrolled'
             user_program = self.other_program_uuid if i == 4 else self.program_uuid
             user_key = 'student-{}'.format(i)
             enrollments.append(

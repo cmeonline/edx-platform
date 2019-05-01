@@ -8,6 +8,7 @@ from django.apps import AppConfig
 
 from openedx.core.djangoapps.plugins.constants import ProjectType, PluginURLs
 
+
 class ProgramEnrollmentsConfig(AppConfig):
     """
     Application configuration for ProgramEnrollment

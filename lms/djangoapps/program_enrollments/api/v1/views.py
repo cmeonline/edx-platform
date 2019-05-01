@@ -4,11 +4,9 @@ ProgramEnrollment Views
 """
 from __future__ import unicode_literals
 
-from collections import OrderedDict, Counter
+from collections import Counter, OrderedDict
 from functools import wraps
 
-from lms.djangoapps.program_enrollments.api.v1.serializers import ProgramEnrollmentSerializer
-from lms.djangoapps.program_enrollments.models import ProgramEnrollment
 from edx_rest_framework_extensions import permissions
 from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthentication
 from edx_rest_framework_extensions.auth.session.authentication import SessionAuthenticationAllowInactiveUser
@@ -16,7 +14,10 @@ from rest_framework import status
 from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 
-from lms.djangoapps.program_enrollments.api.v1.serializers import ProgramEnrollmentListSerializer
+from lms.djangoapps.program_enrollments.api.v1.serializers import (
+    ProgramEnrollmentListSerializer,
+    ProgramEnrollmentSerializer
+)
 from lms.djangoapps.program_enrollments.models import ProgramEnrollment
 from openedx.core.djangoapps.catalog.utils import get_programs
 from openedx.core.lib.api.authentication import OAuth2AuthenticationAllowInactiveUser
@@ -129,11 +130,15 @@ class ProgramEnrollmentsView(DeveloperErrorViewMixin, PaginatedAPIView):
         serializer = ProgramEnrollmentListSerializer(paginated_enrollments, many=True)
         return self.get_paginated_response(serializer.data)
 
+    ERROR_CONFLICT = 'conflict'
+    ERROR_DUPLICATED = 'duplicated'
+    ERROR_INVALID_STATUS = 'invalid-status'
+
     @verify_program_exists
     def post(self, request, *args, **kwargs):
-        ERROR_CONFLICT = 'conflict'
-        ERROR_DUPLICATED = 'duplicated'
-        ERROR_INVALID_STATUS = 'invalid-status'
+        """
+        This is the POST for ProgramEnrollments
+        """
         if len(request.data) > 25:
             return Response(
                 status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
@@ -176,12 +181,12 @@ class ProgramEnrollmentsView(DeveloperErrorViewMixin, PaginatedAPIView):
                 enrollments_to_create[(student_key, curriculum_uuid)] = serializer
                 response_data[student_key] = data.get('status')
             else:
-                if ('status' in serializer.errors and serializer.errors['status'][0].code == 'invalid_choice'):
+                if 'status' in serializer.errors and serializer.errors['status'][0].code == 'invalid_choice':
                     response_data[student_key] = self.ERROR_INVALID_STATUS
                 else:
                     return Response(
                         'invalid enrollment record',
-                        HTTP_422_UNPROCESSABLE_ENTITY
+                        self.HTTP_422_UNPROCESSABLE_ENTITY
                     )
 
         for enrollment_serializer in enrollments_to_create.values():
