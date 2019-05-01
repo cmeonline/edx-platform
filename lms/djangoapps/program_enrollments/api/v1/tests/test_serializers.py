@@ -36,5 +36,11 @@ class ProgramEnrollmentSerializerTests(TestCase):
 
         self.assertEqual(
             set(data.keys()),
-            {'user', 'external_user_key', 'program_uuid', 'curriculum_uuid', 'status'}
+            set(['user',
+                'external_user_key',
+                'program_uuid',
+                'curriculum_uuid',
+                'status'
+            ])
         )
+
