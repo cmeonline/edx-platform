@@ -32,6 +32,9 @@ Installation
     ![open edx django migrations](docs/platform-migrations-installation.png)
 
 
+If everything worked successfully then you should find a new field in the User screen of the Django Admin Console:
+
+![django admin user](docs/django-admin-user.png)
 
 
 Django Admin console
