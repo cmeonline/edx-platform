@@ -1,23 +1,81 @@
+CME Online  Open edX Platform Fork
 This is the main edX platform which consists of LMS and Studio.
 
 
-Installation
+Installation / Updates (as per Lawrence McDaniel)
 ------------
 
-Please refer to the following wiki pages in our `configuration repo`_ to
-install edX:
+*Add any changes to /edx/app/edx_ansible/server-vars.yml*
 
--  `edX Developer Stack`_: These instructions are for developers who want
-   to contribute or make changes to the edX source code.
--  `edX Full Stack`_: Using Vagrant/Virtualbox this will setup all edX
-   services on a single server in a production like configuration.
--  `edX Ubuntu 16.04 64-bit Installation`_: This will install edX on an
-   existing Ubuntu 16.04 server.
+.. code-block:: bash
 
-.. _configuration repo: https://github.com/edx/configuration
-.. _edX Developer Stack: https://github.com/edx/devstack
-.. _edX Full Stack: https://openedx.atlassian.net/wiki/display/OpenOPS/Running+Fullstack
-.. _edX Ubuntu 16.04 64-bit Installation: https://openedx.atlassian.net/wiki/display/OpenOPS/Native+Open+edX+Ubuntu+16.04+64+bit+Installation
+  sudo ./edx.platform-stop.sh
+  sudo rm -rf /edx/app/edxapp/edx-platform
+  sudo /edx/bin/update edx-platform cmeonline.master
+  sudo ./edx.install-theme.sh
+  sudo ./edx.install-config.sh
+  sudo ./edx.compile-assets.sh
+  sudo ./edx.platform-restart-full.sh
+
+
+Custom Modules (as per Lawrence McDaniel)
+------------
+
+
+Git Work Flow
+------------
+
+.. image:: docs/git-workflow.png
+
+
+Work with a feature branch off cmeonline.master
+------------
+.. code-block:: bash
+
+  # how to create a new feature branch named "cmeonline.master-oauth" from cmeonline.master
+  git checkout -b cmeonline.master-oauth cmeonline.master
+  git branch --set-upstream-to=origin/open-release/ironwood.master cmeonline.master
+
+  # How to merge cmeonline.master-oauth modifications into cmeonline.master
+  git checkout cmeonline.master
+  git pull                            # to synch your local repo with remote
+  git checkout cmeonline.master-oauth
+  git pull                            # to sunch your locla repo with remote
+  git rebase -i cmeonline.master           # rebase cmeonline.master-oauth to cmeonline.master
+  git checkout cmeonline.master
+  git merge cmeonline.master-oauth         # merge cmeonline.master-oauth into cmeonline.master
+
+  # Push your changes to Github
+  git push origin cmeonline.master
+  git push origin cmeonline.master-oauth
+
+
+
+Merge cmeonline.dev into cmeonline.master
+------------
+.. code-block:: bash
+
+  git checkout querium.dev
+  git pull                            # to synch your local repo with remote
+  git checkout cmeonline.dev
+  git pull                            # to sunch your local repo with remote
+  git rebase -i cmeonline.master        # rebase cmeonline.master to querium.master
+  git checkout cmeonline.master
+  git merge cmeonline.master               # merge cmeonline.master into querium.master
+
+  # Push your changes to Github
+  git push origin cmeonline.master
+  git push origin cmeonline.dev
+
+
+Deployment Notes
+-------
+This fork will not install "cleanly" due to UI customizations that are not themeable. Because of these file modifications Paver will compile successfully only when the custom theme for this fork is also installed and configured.
+Other stuff that is prone to challenges:
+1. RabbitMQ initially caused problems on roverbyopenstax.com and had to be installed. Oddly, most celery tasks worked correctly. Only write operations to Mongo were problematic
+2. Assets have to be compiled using our own compiler scripts, located in the config repos
+3. Letsencrypt ssl certificates have to be hand replaced.
+4. It's not a bad idea to search the code base and the custom theme for hard-coded domain names, as these tend to creep into the code on a regular basis.
 
 
 License
@@ -29,15 +87,8 @@ unless otherwise noted. Please see the `LICENSE`_ file for details.
 .. _LICENSE: https://github.com/edx/edx-platform/blob/master/LICENSE
 
 
-More about Open edX
--------------------
 
-See the `Open edX site`_ to learn more about Open edX. You can find
-information about the edX roadmap, as well as about hosting, extending, and
-contributing to Open edX. In addition, the Open edX Portal provides product
-announcements, the Open edX blog, and other rich community resources.
 
-.. _Open edX site: https://open.edx.org
 
 Documentation
 -------------
@@ -45,63 +96,3 @@ Documentation
 Documentation details can be found in the `docs index.rst`_.
 
 .. _docs index.rst: docs/index.rst
-
-Getting Help
-------------
-
-If you’re having trouble, we have several different mailing lists where
-you can ask for help:
-
--  `openedx-ops`_: everything related to *running* Open edX. This
-   includes installation issues, server management, cost analysis, and
-   so on.
--  `openedx-translation`_: everything related to *translating* Open edX
-   into other languages. This includes volunteer translators, our
-   internationalization infrastructure, issues related to Transifex, and
-   so on.
--  `openedx-analytics`_: everything related to *analytics* in Open edX.
--  `edx-code`_: anything else related to Open edX. This includes feature
-   requests, idea proposals, refactorings, and so on.
-
-Our real-time conversations are on Slack. You can request a `Slack
-invitation`_, then join our `community Slack team`_.
-
-.. _openedx-ops: https://groups.google.com/forum/#!forum/openedx-ops
-.. _openedx-translation: https://groups.google.com/forum/#!forum/openedx-translation
-.. _openedx-analytics: https://groups.google.com/forum/#!forum/openedx-analytics
-.. _edx-code: https://groups.google.com/forum/#!forum/edx-code
-.. _Slack invitation: https://openedx-slack-invite.herokuapp.com/
-.. _community Slack team: http://openedx.slack.com/
-
-
-Issue Tracker
--------------
-
-`We use JIRA for our issue tracker`_, not GitHub Issues. To file a bug
-or request a new feature, please make a free account on our JIRA and
-create a new issue! If you’re filing a bug, we’d appreciate it if you
-would follow `our guidelines for filing high-quality, actionable bug
-reports`_. Thanks!
-
-.. _We use JIRA for our issue tracker: https://openedx.atlassian.net/
-.. _our guidelines for filing high-quality, actionable bug reports: https://openedx.atlassian.net/wiki/display/SUST/How+to+File+a+Quality+Bug+Report
-
-
-How to Contribute
------------------
-
-Contributions are very welcome, but for legal reasons, you must submit a
-signed `individual contributor agreement`_ before we can accept your
-contribution. See our `CONTRIBUTING`_ file for more information – it
-also contains guidelines for how to maintain high code quality, which
-will make your contribution more likely to be accepted.
-
-
-Reporting Security Issues
--------------------------
-
-Please do not report security issues in public. Please email
-security@edx.org.
-
-.. _individual contributor agreement: https://open.edx.org/wp-content/uploads/2019/01/individual-contributor-agreement.pdf
-.. _CONTRIBUTING: https://github.com/edx/edx-platform/blob/master/CONTRIBUTING.rst
