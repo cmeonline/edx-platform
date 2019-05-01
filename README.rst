@@ -68,14 +68,6 @@ Merge cmeonline.dev into cmeonline.master
   git push origin cmeonline.dev
 
 
-Deployment Notes
--------
-This fork will not install "cleanly" due to UI customizations that are not themeable. Because of these file modifications Paver will compile successfully only when the custom theme for this fork is also installed and configured.
-Other stuff that is prone to challenges:
-1. RabbitMQ initially caused problems on roverbyopenstax.com and had to be installed. Oddly, most celery tasks worked correctly. Only write operations to Mongo were problematic
-2. Assets have to be compiled using our own compiler scripts, located in the config repos
-3. Letsencrypt ssl certificates have to be hand replaced.
-4. It's not a bad idea to search the code base and the custom theme for hard-coded domain names, as these tend to creep into the code on a regular basis.
 
 
 License
@@ -85,8 +77,6 @@ The code in this repository is licensed under version 3 of the AGPL
 unless otherwise noted. Please see the `LICENSE`_ file for details.
 
 .. _LICENSE: https://github.com/edx/edx-platform/blob/master/LICENSE
-
-
 
 
 
