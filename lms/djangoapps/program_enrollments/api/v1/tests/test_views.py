@@ -1,31 +1,24 @@
 """ Tests for the v1 program enrollment API Views """
+import json
 from uuid import uuid4
-from itertools import product
+import ddt
+from django.contrib.auth.models import Permission
+from django.core.cache import cache
+from lms.djangoapps.program_enrollments.api.v1.constants import CourseEnrollmentResponseStatuses as CourseStatuses
+from lms.djangoapps.program_enrollments.models import ProgramCourseEnrollment
+from lms.djangoapps.program_enrollments.tests.factories import ProgramEnrollmentFactory, ProgramCourseEnrollmentFactory
+from opaque_keys.edx.keys import CourseKey
 from openedx.core.lib.api.tests.mixins import JwtMixin
 from openedx.core.djangoapps.catalog.tests.factories import (
     CourseFactory,
-    CourseRunFactory,
-    PathwayFactory,
+    OrganizationFactory as CatalogOrganizationFactory,
     ProgramFactory,
-    ProgramTypeFactory
 )
 from openedx.core.djangolib.testing.utils import CacheIsolationMixin
-from lms.djangoapps.program_enrollments.api.v1.constants import CourseEnrollmentResponseStatuses as CourseStatuses
-from lms.djangoapps.program_enrollments.models import ProgramCourseEnrollment, ProgramEnrollment
-from lms.djangoapps.program_enrollments.tests.factories import ProgramEnrollmentFactory, ProgramCourseEnrollmentFactory
-import ddt
 from openedx.core.djangoapps.content.course_overviews.tests.factories import CourseOverviewFactory
-from student.tests.factories import UserFactory, GroupFactory
-from django.contrib.auth.models import Permission
-from rest_framework.test import APITestCase
-from opaque_keys.edx.keys import CourseKey
-from openedx.core.djangoapps.catalog.tests.factories import (
-    OrganizationFactory as CatalogOrganizationFactory, ProgramFactory
-)
-from django.core.cache import cache
 from openedx.core.djangoapps.catalog.cache import PROGRAM_CACHE_KEY_TPL
-import json
-
+from rest_framework.test import APITestCase
+from student.tests.factories import UserFactory, GroupFactory
 
 
 class RequestMixin(JwtMixin):
@@ -109,7 +102,6 @@ class MockAPITestMixin(RequestMixin):
             )
         self.admin_user = UserFactory(groups=[self.admin_program_enrollment_group])
 
-
     def test_unauthenticated(self):
         response = self.get(self.path, None)
         self.assertEqual(response.status_code, 401)
@@ -151,7 +143,7 @@ class CourseEnrollmentPostTests(MockAPITestMixin, APITestCase, ProgramCacheTestC
     def setUp(self):
         super(CourseEnrollmentPostTests, self).setUp()
         self.clear_caches()
-        self.addCleanup(self.clear_caches) 
+        self.addCleanup(self.clear_caches)
         self.program_uuid = uuid4()
         self.organization_key = "orgkey"
         self.program = self.setup_catalog_cache(self.program_uuid, self.organization_key)
@@ -165,19 +157,29 @@ class CourseEnrollmentPostTests(MockAPITestMixin, APITestCase, ProgramCacheTestC
         )
         CourseOverviewFactory(id=self.course_not_in_program_key)
         self.path_suffix = self.build_path(self.program_uuid, self.course_run["key"])
-        
+
     def learner_enrollment(self, student_key, status="active"):
+        """
+        Convenience method to create a learner enrollment record
+        """
         return {"student_key": student_key, "status": status}
-    
+
     def build_path(self, program_uuid, course):
+        """
+        Convenience method to build a path for a program course enrollment request
+        """
         return 'programs/{}/course/{}/enrollments/'.format(program_uuid, course)
-    
+
     def create_program_enrollment(self, external_user_key, user=False):
+        """
+        Creates and returns a ProgramEnrollment for the given external_user_key and
+        user if specified.
+        """
         program_enrollment = ProgramEnrollmentFactory.create(
             external_user_key=external_user_key,
             program_uuid=self.program_uuid,
         )
-        if not user == False:
+        if user is not False:
             program_enrollment.user = user
             program_enrollment.save()
         return program_enrollment
@@ -205,11 +207,15 @@ class CourseEnrollmentPostTests(MockAPITestMixin, APITestCase, ProgramCacheTestC
             response.data
         )
         self.assert_program_course_enrollment("l1", "active", True)
-        self.assert_program_course_enrollment("l2",  "inactive", True)
+        self.assert_program_course_enrollment("l2", "inactive", True)
         self.assert_program_course_enrollment("l3", "active", False)
         self.assert_program_course_enrollment("l4", "inactive", False)
-    
+
     def assert_program_course_enrollment(self, external_user_key, expected_status, has_user):
+        """
+        Convenience method to assert that a ProgramCourseEnrollment has been created,
+        and potentially that a CourseEnrollment has also been created
+        """
         enrollment = ProgramCourseEnrollment.objects.get(
             program_enrollment__external_user_key=external_user_key
         )
@@ -246,7 +252,7 @@ class CourseEnrollmentPostTests(MockAPITestMixin, APITestCase, ProgramCacheTestC
         self.assertEqual(422, response.status_code)
         self.assertDictEqual({'l1': CourseStatuses.CONFLICT}, response.data)
 
-    def user_not_in_program(self):
+    def test_user_not_in_program(self):
         self.create_program_enrollment('l1')
         post_data = [
             self.learner_enrollment("l1"),
