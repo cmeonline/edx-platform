@@ -23,3 +23,11 @@ class StudentConfig(AppConfig):
         from django.contrib.auth.models import User
         from .signals.receivers import on_user_updated
         pre_save.connect(on_user_updated, sender=User)
+
+        from django.contrib.auth import settings
+
+        if hasattr(settings, 'TEST_ROOT'):
+            import student.models as student_models
+            from mock import MagicMock
+
+            student_models.CourseEnrollment.history = MagicMock()

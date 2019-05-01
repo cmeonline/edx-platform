@@ -5,9 +5,8 @@ from cms.djangoapps.contentstore.signals.handlers import (
     GRADING_POLICY_COUNTDOWN_SECONDS,
     handle_grading_policy_changed
 )
-from student.tests.factories import CourseEnrollmentFactory, UserFactory
+from student.tests.factories import CourseEnrollmentFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
-from xmodule.modulestore.tests.factories import CourseFactory
 
 
 @ddt.ddt
