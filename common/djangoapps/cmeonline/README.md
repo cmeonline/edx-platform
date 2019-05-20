@@ -35,15 +35,3 @@ Installation
 If everything worked successfully then you should find a new field in the User screen of the Django Admin Console:
 
 ![django admin user](docs/django-admin-user.png)
-
-
-Django Admin console
---------
-The salesforce integrations are fully maintainable from within the AM Django admin console.
-![django admin console](docs/django_admin_screenshot.png)
-
-Staff and/or Super Users can perform CRUD operations on contacts (aka Instructors).
-![django admin contacts](docs/django_admin_contact.png)
-
-Staff and/or Super Users can manage salesforce.com connectivity data. Modifications to the salesforce.com configuration parameters take effect immediately. You can test your salesforce.com connection parameters by using the Django command line utility ```python manage.py verifyconnectivity```
-![django admin configuration](docs/django_admin_configuration.png)
